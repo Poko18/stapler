@@ -29,6 +29,8 @@ class Stapler(object):
 
         self.minimum_sequence_distance = minimum_sequence_distance
         self.maximum_neighborhood_distance = maximum_neighborhood_distance
+        
+        self._staples = set()
 
 
     def decode(self, i, j, data):
@@ -38,7 +40,12 @@ class Stapler(object):
     def place(self, pose, staple):
         raise NotImplementedError
 
-
+    
+    @property
+    def staples(self):
+        return [tuple(staple) for staple in self._staples]
+    
+    
     def apply(self, pose):
         xyzs_a = np.array([[residue.atom(atom).xyz() for atom in self.atom_selectors[0]] for residue in pose.residues if not residue.is_virtual_residue()])
         xyzs_b = np.array([[residue.atom(atom).xyz() for atom in self.atom_selectors[0]] for residue in pose.residues if not residue.is_virtual_residue()])
@@ -64,7 +71,11 @@ class Stapler(object):
             [frozenset(self.decode(int(i+1), int(j+1), staple_ab)) for (i, j), staples_ab in zip(sele, self.hash_table[keys_ab]) for staple_ab in staples_ab] +
             [frozenset(self.decode(int(i+1), int(j+1), staple_ba)) for (j, i), staples_ba in zip(sele, self.hash_table[keys_ba]) for staple_ba in staples_ba]
         )
-
+        self._staples.update(staples)
+        return self.staples
+    
+    def dump_pdbs(self, pose):
+        staples = self.staples
         for staple in staples:
             print(tuple(staple))
-            yield self.place(pose.clone(), tuple(staple))
+            yield self.place(pose.clone(), [tuple(staple)])

@@ -36,13 +36,14 @@ class NativeDisulfideStapler(Stapler):
         )
 
 
-    def place(self, pose, staple):
-        form_disulfide(pose.conformation(), staple[0][0], staple[1][0])
+    def place(self, pose, staples):
+        for staple in staples:
+            form_disulfide(pose.conformation(), staple[0][0], staple[1][0])
 
-        for i, chi in enumerate(staple[0][2]):
-            pose.set_chi(i+1, staple[0][0], chi)
+            for i, chi in enumerate(staple[0][2]):
+                pose.set_chi(i+1, staple[0][0], chi)
 
-        for i, chi in enumerate(staple[1][2]):
-            pose.set_chi(i+1, staple[1][0], chi)
+            for i, chi in enumerate(staple[1][2]):
+                pose.set_chi(i+1, staple[1][0], chi)
 
         return pose
